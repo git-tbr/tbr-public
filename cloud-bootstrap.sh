@@ -177,23 +177,7 @@ GetInstanceType() {
     esac
 }
 
-TuneSystemForHighThroughput() {
-    ulimit -n 65535
-    cat << "EOF" > /etc/sysctl.d/99-streaming-performance.conf
-# Aumenta a quantidade máxima de conexões pendentes na fila
-net.core.somaxconn = 1024
-# Aumenta os buffers de memória de recepção e envio de pacotes
-net.core.rmem_max = 16777216
-net.core.wmem_max = 16777216
-net.ipv4.tcp_rmem = 4096 87380 16777216
-net.ipv4.tcp_wmem = 4096 65536 16777216
-# Habilita o reuso de conexões TCP em estado TIME_WAIT
-net.ipv4.tcp_tw_reuse = 1
-EOF
-    sysctl --system >/dev/null 2>&1
-}
-
-GetCloudTags() {
+GetTags() {
     local provider
     provider=$(GetCloudProvider)
 
@@ -229,3 +213,21 @@ GetCloudTags() {
             ;;
     esac
 }
+
+TuneSystemForHighThroughput() {
+    ulimit -n 65535
+    cat << "EOF" > /etc/sysctl.d/99-streaming-performance.conf
+# Aumenta a quantidade máxima de conexões pendentes na fila
+net.core.somaxconn = 1024
+# Aumenta os buffers de memória de recepção e envio de pacotes
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+net.ipv4.tcp_rmem = 4096 87380 16777216
+net.ipv4.tcp_wmem = 4096 65536 16777216
+# Habilita o reuso de conexões TCP em estado TIME_WAIT
+net.ipv4.tcp_tw_reuse = 1
+EOF
+    sysctl --system >/dev/null 2>&1
+}
+
+
