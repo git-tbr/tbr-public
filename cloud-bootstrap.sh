@@ -146,7 +146,13 @@ GetPublicIp() {
 
     case "$provider" in
         "OCI")
-            curl -s -H "Authorization: Bearer Oracle" http://169.254.169.254/opc/v2/vnics/ | jq -r '.[0].publicIp'
+            local oci_public_ip
+            oci_public_ip=$(curl -s -H "Authorization: Bearer Oracle" http://169.254.169.254/opc/v2/vnics/ | jq -r '.[0].publicIp // empty')
+            
+            if [ -z "$oci_public_ip" ] || [ "$oci_public_ip" == "null" ]; then
+                oci_public_ip=$(curl -s --connect-timeout 3 https://ifconfig.me 2>/dev/null)
+            fi
+            echo "$oci_public_ip"
             ;;
         "AWS")
             local aws_token
@@ -160,7 +166,7 @@ GetPublicIp() {
             curl -s -H "Metadata: true" "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2021-02-01&format=text"
             ;;
         *)
-            curl -s https://ifconfig.me
+            curl -s --connect-timeout 3 https://ifconfig.me 2>/dev/null
             ;;
     esac
 }
